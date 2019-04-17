@@ -41,9 +41,7 @@ GCC_CONFIG="--prefix=$INSTALL \
 
 # musl config
 MUSL_CONFIG="--prefix=$INSTALL/$TARGET \
-	--host=$TARGET \
-	--disable-wrapper \
-	--enable-shared-libgcc"
+	--host=$TARGET"
 
 # build, source, options
 do_configure() {

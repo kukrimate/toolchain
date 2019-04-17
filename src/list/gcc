@@ -1,0 +1,8 @@
+VER=8.3.0
+URL=https://ftp.gnu.org/gnu/gcc/gcc-$VER/gcc-$VER.tar.xz
+SHA=64baadfe6cc0f4947a84cb12d7f0dfaf45bb58b7e92461639596c21e02d97d2c
+
+PATCHES=("contrib/download_prerequisites"
+"sed -i '/m64=/s/lib64/lib/' gcc/config/i386/t-linux64"
+"sed -i '/CROSS_SYSTEM_HEADER_DIR=/s/sys-include/include/' gcc/configure"
+"sed -i '/LIMITS_H_TEST = /s/\[.*/true/' gcc/Makefile.in")

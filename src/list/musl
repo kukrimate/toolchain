@@ -1,0 +1,6 @@
+VER=1.1.22
+URL=https://www.musl-libc.org/releases/musl-$VER.tar.gz
+SHA=8b0941a48d2f980fd7036cfbd24aa1d414f03d9a0652ecbd5ec5c7ff1bee29e3
+
+PATCHES=("sed -i '/tryldflag LIBCC -lgcc_eh/s/-lgcc_eh/-lgcc_s || tryldflag LIBCC -lgcc_eh/' configure"
+"sed -i '/install-libs/s/\$(if.*//' Makefile")
