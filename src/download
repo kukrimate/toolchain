@@ -1,0 +1,53 @@
+#!/bin/sh
+
+# Exit on error
+set -e
+
+# download and check a file
+download_file() {
+	FILE=`basename $1`
+
+	if [ ! -f $FILE ]; then
+		curl -L $1 > $FILE
+	else
+		echo "$FILE already exists"
+	fi
+
+	if [ x"$2" != x`sha256sum $FILE | cut -d ' ' -f 1` ]; then
+		echo "SHA256 mismatch for $FILE" >&2
+		exit 1
+	fi
+}
+
+# check if clean is requested
+for arg in "$@"; do
+	case "$arg" in
+		-c|--clean) do_clean=yes ;;
+	esac
+done
+
+# check if curl is installed
+if [ ! -x `command -v curl` ]; then
+	echo "Please install curl" >&2
+	exit 1
+fi
+
+# parse src_list
+SRC_LIST=`sed -e '/^#.*/d' src_list | tr -d ' ' | \
+	tr '\n' ';' | tr '[' '\n' | sed -e '/^$/d'`
+
+OLDIFS=$IFS
+IFS=$'\n'
+for i in $SRC_LIST; do
+	eval `printf "${i#*]}" | tr ';' '\n'`
+
+	if [ x"$do_clean" = xyes ]; then
+		rm -f `basename $url`
+		continue
+	fi
+
+	# Download the file
+	echo Downloading ${i%]*}...
+	download_file $url $sha
+done
+IFS=$OLDIFS

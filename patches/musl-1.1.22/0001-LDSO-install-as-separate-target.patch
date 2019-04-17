@@ -1,0 +1,34 @@
+From 825461b2787a8029de9856dd6c03113006c03064 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?M=C3=A1t=C3=A9=20Kukri?= <kukri.mate@gmail.com>
+Date: Wed, 17 Apr 2019 14:25:46 +0200
+Subject: [PATCH 1/2] LDSO install as separate target
+
+---
+ Makefile | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index b46f8ca..44bd38a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -210,13 +210,15 @@ $(DESTDIR)$(includedir)/%: $(srcdir)/include/%
+ $(DESTDIR)$(LDSO_PATHNAME): $(DESTDIR)$(libdir)/libc.so
+ 	$(INSTALL) -D -l $(libdir)/libc.so $@ || true
+ 
+-install-libs: $(ALL_LIBS:lib/%=$(DESTDIR)$(libdir)/%) $(if $(SHARED_LIBS),$(DESTDIR)$(LDSO_PATHNAME),)
++install-libs: $(ALL_LIBS:lib/%=$(DESTDIR)$(libdir)/%)
++
++install-ldso: $(if $(SHARED_LIBS),$(DESTDIR)$(LDSO_PATHNAME),)
+ 
+ install-headers: $(ALL_INCLUDES:include/%=$(DESTDIR)$(includedir)/%)
+ 
+ install-tools: $(ALL_TOOLS:obj/%=$(DESTDIR)$(bindir)/%)
+ 
+-install: install-libs install-headers install-tools
++install: install-libs install-ldso install-headers install-tools
+ 
+ musl-git-%.tar.gz: .git
+ 	 git --git-dir=$(srcdir)/.git archive --format=tar.gz --prefix=$(patsubst %.tar.gz,%,$@)/ -o $@ $(patsubst musl-git-%.tar.gz,%,$@)
+-- 
+2.21.0
+

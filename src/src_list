@@ -1,0 +1,17 @@
+# Linker/assembler
+[binutils]
+ver = 2.32
+url = https://ftp.gnu.org/gnu/binutils/binutils-$ver.tar.xz
+sha = 0ab6c55dd86a92ed561972ba15b9b70a8b9f75557f896446c82e8b36e473ee04
+
+# Compiler
+[gcc]
+ver = 8.3.0
+url = https://ftp.gnu.org/gnu/gcc/gcc-$ver/gcc-$ver.tar.xz
+sha = 64baadfe6cc0f4947a84cb12d7f0dfaf45bb58b7e92461639596c21e02d97d2c
+
+# C library
+[musl]
+ver = 1.1.22
+url = https://www.musl-libc.org/releases/musl-$ver.tar.gz
+sha = 8b0941a48d2f980fd7036cfbd24aa1d414f03d9a0652ecbd5ec5c7ff1bee29e3

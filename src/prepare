@@ -1,0 +1,50 @@
+#!/bin/sh
+
+# Exit on error
+set -e
+
+# check if clean is requested
+for arg in "$@"; do
+	case "$arg" in
+		-c|--clean) do_clean=yes ;;
+	esac
+done
+
+# parse src_list
+SRC_LIST=`sed -e '/^#.*/d' src_list | tr -d ' ' | \
+	tr '\n' ';' | tr '[' '\n' | sed -e '/^$/d'`
+
+# patch directory
+PATCHDIR=`realpath ../patches`
+
+OLDIFS=$IFS
+IFS=$'\n'
+for i in $SRC_LIST; do
+	eval `printf "${i#*]}" | tr ';' '\n'`
+
+	FILE=`basename $url`
+	if [ ! -f $FILE ]; then
+		echo "Please download $FILE!" >&2
+		exit 1
+	fi
+
+	if [ x"$do_clean" = xyes ]; then
+		rm -rf ${i%]*}-$ver
+		continue
+	fi
+
+	# download the file
+	echo Extracting ${i%]*}...
+	if [ ! -d ${i%]*}-$ver ]; then
+		tar xf $FILE
+	fi
+
+	# Apply patches
+	for j in `find "$PATCHDIR/${i%]*}-$ver/" -type f -name "*.patch" 2> /dev/null`; do
+		echo Applying `basename $j`
+		cd ${i%]*}-$ver
+		patch -Np1 < $j || true
+		cd ..
+	done
+done
+IFS=$OLDIFS

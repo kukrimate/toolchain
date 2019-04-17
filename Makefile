@@ -6,30 +6,6 @@ BINUTILS_VERSION := 2.32
 GCC_VERSION      := 8.3.0
 MUSL_VERSION     := 1.1.22
 
-## Apply the following patches to gcc:
-
-# Kill lib64
-# NOTE: lib64 is an ugly hack so just kill it
-# sed -i '/m64=/s/lib64/lib/' gcc/config/i386/t-linux64
-
-# Kill sys-include
-# NOTE: gcc by default searches the wrong directory for cross system headers
-# sed -i '/CROSS_SYSTEM_HEADER_DIR=/s/sys-include/include/' gcc/configure
-
-# Always assume libc limits.h exists
-# NOTE: this avoids having to install limits.h twice
-# sed -i '/LIMITS_H_TEST = /s/\[.*/true/' gcc/Makefile.in
-
-## Apply the following patches to musl:
-
-# Don't install LDSO symlink
-# NOTE: we do not need this for compiling stuff
-# sed -i '/install-libs/s/$(SHARED_LIBS)/0/' Makefile
-
-# Use shared libgcc when installed
-# NOTE: musl developers for some reason ignore shared libgcc
-# sed -i '/tryldflag LIBCC -lgcc_eh/s/-lgcc_eh/-lgcc_s || tryldflag LIBCC -lgcc_eh/' configure
-
 # Directories
 SRC   := $(PWD)/src
 BUILD := $(PWD)/build
