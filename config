@@ -1,0 +1,10 @@
+# Versions
+BINUTILS_VERSION=2.32
+GCC_VERSION=8.3.0
+MUSL_VERSION=1.1.22
+
+# Target
+TARGET=x86_64-linux-musl
+
+# Makeflags
+MAKEFLAGS=-j`nproc`

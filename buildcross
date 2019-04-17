@@ -1,0 +1,107 @@
+#!/bin/sh
+
+# exit on error
+set -e
+
+# load config file
+source ./config
+
+# sources directory
+SRC=$PWD/src
+# build directory
+BUILD=$PWD/build
+# install directory
+INSTALL=$PWD/install
+export PATH=$INSTALL/bin:$PATH
+
+# package sources
+BINUTILS_SRC=$SRC/binutils-$BINUTILS_VERSION
+GCC_SRC=$SRC/gcc-$GCC_VERSION
+MUSL_SRC=$SRC/musl-$MUSL_VERSION
+
+# binutils config
+BINUTILS_CONFIG="--prefix=$INSTALL \
+	--target=$TARGET \
+	--disable-multilib \
+	--disable-nls \
+	--disable-werror"
+
+# gcc config
+GCC_CONFIG="--prefix=$INSTALL \
+	--target=$TARGET \
+	--disable-multilib \
+	--disable-nls \
+	--disable-werror \
+	--enable-languages=c \
+	--disable-libgomp \
+	--disable-libatomic \
+	--disable-libmpx \
+	--disable-libssp \
+	--disable-libquadmath"
+
+# musl config
+MUSL_CONFIG="--prefix=$INSTALL/$TARGET \
+	--host=$TARGET \
+	--disable-wrapper \
+	--enable-shared-libgcc"
+
+# build, source, options
+do_configure() {
+	# create and enter build directory
+	mkdir -p $BUILD/$1; cd $BUILD/$1
+	# do configure if not done already
+	if [ ! -f .configured ]; then
+		$2/configure $3
+		touch .configured
+	fi
+}
+
+# build, targets, options
+do_make() {
+	# enter build directory
+	cd $BUILD/$1
+
+	# make all targets
+	for t in $2; do
+		if [ ! -f .built_$t ]; then
+			make $MAKEFLAGS $3 $t
+			touch .built_$t
+		fi
+	done
+}
+
+##
+# First stage: binutils + compiler only gcc
+##
+
+# build binutils
+do_configure binutils "$BINUTILS_SRC" "$BINUTILS_CONFIG"
+do_make binutils "all install"
+
+# configure gcc (NOTE: we only configure it once)
+do_configure gcc "$GCC_SRC" "$GCC_CONFIG"
+# build only the compiler
+do_make gcc "all-gcc install-gcc"
+
+##
+# Second stage: musl headers + static libgcc + temporary musl
+##
+
+# musl headers
+do_configure muslhdr "$MUSL_SRC" "$MUSL_CONFIG"
+do_make muslhdr install-headers
+# build static libgcc
+do_make gcc "all-target-libgcc install-target-libgcc" "enable_shared=no -e"
+# build musl against static libgcc
+do_configure musl1 "$MUSL_SRC" "$MUSL_CONFIG"
+do_make musl1 "all install-libs"
+
+##
+# Final stage: finalize gcc + final musl
+##
+
+# build final libgcc + other parts of gcc
+do_make gcc "all install" "enable_shared=yes -e"
+# build final musl
+do_configure musl2 "$MUSL_SRC" "$MUSL_CONFIG"
+do_make musl2 "all install-libs" "-B" # NOTE: -B is needed to overwrite previously installed libs
